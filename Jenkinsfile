@@ -22,7 +22,7 @@ pipeline {
     parameters {
         choice(
             name: 'TEST_TYPE',
-            choices: ['smoke', 'regression', 'sanity','others'],
+            choices: ['smoke', 'regression', 'sanity','All'],
             description: 'Select which Playwright tests to run'
         )
     }
