@@ -16,102 +16,128 @@ def shouldRunStage(String stageName) {
       return false
   }
 }
-
 pipeline {
-  agent any
+    agent any
 
-  parameters {
-    choice(
-      name: 'SUITE',
-      choices: ['all', 'smoke', 'sanity', 'regression'],
-      description: 'Choose a suite to run manually. Scheduled runs use the time-based defaults.'
-    )
-  }
-
-  triggers {
-    cron('H 6 * * *')
-    cron('H 12 * * *')
-    cron('H 20 * * *')
-  }
-
-  tools {
-    nodejs 'NodeJS-20'
-  }
-
-  environment {
-    CI = 'true'
-    BASE_URL = 'https://dev.baserahub.com/'
-    HEADLESS = 'true'
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    parameters {
+        choice(
+            name: 'TEST_TYPE',
+            choices: ['smoke', 'regression', 'sanity','others'],
+            description: 'Select which Playwright tests to run'
+        )
     }
 
-    stage('Install Dependencies') {
-      steps {
-        bat 'npm ci'
-        bat 'npx playwright install --with-deps'
-      }
+    triggers {
+        cron('H 6,12,20 * * *')
     }
 
-    stage('Smoke Tests') {
-      when {
-        expression { return shouldRunStage('smoke') }
-      }
-      steps {
-        bat 'npm run test:smoke'
-      }
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/Rkt007/BaseraHub_E2E.git/'
+            }
+        }
+
+        stage('Check Node & NPM') {
+            steps {
+                bat 'node -v'
+                bat 'npm -v'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                bat 'npm install'
+            }
+        }
+
+        stage('Install Playwright Browsers') {
+            steps {
+                bat 'npx playwright install'
+            }
+        }
+
+        stage('Run Playwright Tests') {
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    script {
+                        def testType = params.TEST_TYPE ?: 'smoke'
+
+                        if (testType == 'smoke') {
+                            bat 'npx playwright test --grep @smoke'
+                        }
+                        else if (testType == 'regression') {
+                            bat 'npx playwright test --grep @regression'
+                        }
+                        else if (testType == 'others') {
+                            bat 'npx playwright test --grep-invert "@smoke|@regression"'
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    stage('Sanity Tests') {
-      when {
-        expression { return shouldRunStage('sanity') }
-      }
-      steps {
-        bat 'npm run test:sanity'
-      }
-    }
+    post {
+        always {
+            archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
 
-    stage('Regression Tests') {
-      when {
-        expression { return shouldRunStage('regression') }
-      }
-      steps {
-        bat 'npm run test:regression'
-      }
-    }
+            allure(
+                includeProperties: false,
+                jdk: '',
+                results: [[path: 'allure-results']]
+            )
+        }
 
-    stage('Generate Allure Report') {
-      steps {
-        bat 'npm run report:allure:generate'
-      }
-    }
-  }
+        success {
+            emailext(
+                to: 'rahul.rkt007@gmail.com',
+                subject: "✅ Jenkins SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """Hi Rahul,
 
-  post {
-    always {
-      junit allowEmptyResults: true, testResults: 'reports/junit/results.xml'
-      archiveArtifacts allowEmptyArchive: true, artifacts: 'reports/**/*'
-      publishHTML([
-        allowMissing: true,
-        alwaysLinkToLastBuild: true,
-        keepAll: true,
-        reportDir: 'reports/playwright-report',
-        reportFiles: 'index.html',
-        reportName: 'Playwright HTML Report'
-      ])
-      publishHTML([
-        allowMissing: true,
-        alwaysLinkToLastBuild: true,
-        keepAll: true,
-        reportDir: 'reports/allure-report',
-        reportFiles: 'index.html',
-        reportName: 'Allure Report'
-      ])
+Jenkins build SUCCESS ✅
+No flaky tests detected.
+
+Build URL:
+${env.BUILD_URL}
+"""
+            )
+        }
+
+        unstable {
+            emailext(
+                to: 'rahul.rkt007@gmail.com',
+                subject: "⚠️ Jenkins UNSTABLE (Flaky Tests): ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """Hi Rahul,
+
+Some tests were flaky ⚠️
+They passed after retries.
+
+Please check Allure report.
+
+Build URL:
+${env.BUILD_URL}
+"""
+            )
+        }
+
+        failure {
+            emailext(
+                to: 'rahul.rkt007@gmail.com',
+                subject: "❌ Jenkins FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """Hi Rahul,
+
+Tests failed even after retries ❌
+
+Please check Allure & Playwright reports.
+
+Build URL:
+${env.BUILD_URL}
+"""
+            )
+        }
     }
-  }
 }
