@@ -1,0 +1,18 @@
+{
+  "buyer": {
+    "email": "rahul.rkt007@gmail.com",
+    "password": "ChangeMe123!"
+  },
+  "seller": {
+    "email": "rahul.rkt007@gmail.com",
+    "password": "ChangeMe123!"
+  },
+  "agent": {
+    "email": "rahul.rkt007@gmail.com",
+    "password": "ChangeMe123!"
+  },
+  "admin": {
+    "email": "rahul.rkt007@gmail.com",
+    "password": "ChangeMe123!"
+  }
+}

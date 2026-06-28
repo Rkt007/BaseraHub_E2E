@@ -1,0 +1,47 @@
+name: Housing-Hunt Playwright
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+    - cron: '0 12 * * *'
+    - cron: '0 20 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      BASE_URL: https://dev.baserahub.com/
+      HEADLESS: true
+      BUYER_EMAIL: ${{ secrets.BUYER_EMAIL }}
+      BUYER_PASSWORD: ${{ secrets.BUYER_PASSWORD }}
+      SELLER_EMAIL: ${{ secrets.SELLER_EMAIL }}
+      SELLER_PASSWORD: ${{ secrets.SELLER_PASSWORD }}
+      AGENT_EMAIL: ${{ secrets.AGENT_EMAIL }}
+      AGENT_PASSWORD: ${{ secrets.AGENT_PASSWORD }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npm run test:smoke
+      - run: npm run test:sanity
+      - run: npm run test:regression
+      - run: npm run report:allure:generate
+        if: always()
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-reports
+          path: reports/

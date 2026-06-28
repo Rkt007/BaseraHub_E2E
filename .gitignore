@@ -1,0 +1,10 @@
+node_modules/
+.env
+reports/
+allure-results/
+allure-report/
+test-results/
+playwright-report/
+blob-report/
+.cache/
+npm-debug.log*

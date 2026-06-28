@@ -1,0 +1,8 @@
+{
+  "leadScores": {
+    "hot": "Ready in 1-3 months",
+    "warm": "Ready in 6-12 months",
+    "cold": "Just browsing"
+  },
+  "statuses": ["New", "Contacted", "Interested", "Not Interested", "Converted"]
+}

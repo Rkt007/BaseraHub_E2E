@@ -1,0 +1,37 @@
+{
+  "name": "housing-hunt-playwright-framework",
+  "version": "1.0.0",
+  "description": "Scalable Playwright JavaScript automation framework for Housing-Hunt real estate platform.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:smoke": "playwright test --project=chromium --grep @smoke",
+    "test:sanity": "playwright test --project=chromium --grep @sanity",
+    "test:regression": "playwright test --project=chromium --grep @regression",
+    "test:api": "playwright test tests/api",
+    "report": "playwright show-report reports/playwright-report",
+    "report:allure:generate": "allure generate reports/allure-results --clean -o reports/allure-report",
+    "report:allure:open": "allure open reports/allure-report",
+    "report:allure:serve": "allure serve reports/allure-results",
+    "codegen": "playwright codegen https://www.baserahub.com/",
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "playwright",
+    "javascript",
+    "pom",
+    "real-estate",
+    "qa-automation"
+  ],
+  "author": "Housing-Hunt QA Automation",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "allure-commandline": "^2.43.0",
+    "allure-playwright": "^3.10.1",
+    "dotenv": "^16.4.5",
+    "eslint": "^9.6.0"
+  }
+}

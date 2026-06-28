@@ -1,0 +1,11 @@
+{
+  "city": "Noida",
+  "filters": {
+    "budget": "50L - 1Cr",
+    "bedrooms": "3",
+    "bathrooms": "2",
+    "propertyType": "Apartment",
+    "furnishing": "Semi Furnished",
+    "amenities": ["Parking", "Lift", "Security"]
+  }
+}

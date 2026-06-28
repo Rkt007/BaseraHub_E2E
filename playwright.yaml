@@ -1,0 +1,16 @@
+baseURL: "https://dev.baserahub.com/"
+browser: "chromium"
+headless: true
+retries: 2
+workers: 4
+reports:
+  html: "reports/playwright-report"
+  junit: "reports/junit/results.xml"
+  allureResults: "reports/allure-results"
+  allureReport: "reports/allure-report"
+  artifacts: "reports/test-results"
+testSuites:
+  smoke: "npm run test:smoke"
+  sanity: "npm run test:sanity"
+  regression: "npm run test:regression"
+  all: "npm test"
